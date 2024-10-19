@@ -1,153 +1,173 @@
-class PostProgram {
-    constructor(initialHeadPosition, tape) {
-        this.initialHeadPosition = initialHeadPosition;
-        this.tape = tape;
-        this.lines = [];
+class Command {
+    static CommandType = {
+        SET_MARK: 'SET_MARK',
+        REMOVE_MARK: 'REMOVE_MARK',
+        MOVE_LEFT: 'MOVE_LEFT',
+        MOVE_RIGHT: 'MOVE_RIGHT',
+        CHECK_MARK: 'CHECK_MARK',
+        STOP: 'STOP',
+        NO_OP: 'NO_OP'
+    };
+
+    constructor(type, nextCommandIndex, alternativeCommandIndex = 0) {
+        this.type = type;
+        this.nextCommandIndex = nextCommandIndex;
+        this.alternativeCommandIndex = alternativeCommandIndex;
     }
 
-    addLine(command) {
-        this.lines.push(command);
+    getType() {
+        return this.type;
+    }
+
+    getNextCommandIndex() {
+        return this.nextCommandIndex;
+    }
+
+    getAlternativeCommandIndex() {
+        return this.alternativeCommandIndex;
     }
 }
 
-const CommandName = {
-    set: 'set',
-    if: 'if',
-    stop: 'stop',
-    move: 'move',
-    jump: 'jump'
-};
-
-const MoveType = {
-    left: 'left',
-    right: 'right'
-};
-
-const MarkType = {
-    mark: 'mark',
-    zero: 'zero'
-};
-
-class PostCommand {
-    constructor(name, firstValue, secondValue, value) {
+class PostMachineProgram {
+    constructor(initialPosition, initialTape, name, maxSteps, commands) {
+        this.initialPosition = initialPosition;
+        this.tape = initialTape;
         this.name = name;
-        this.secondValue = secondValue;
-        this.firstValue = firstValue;
-        this.value = value;
+        this.maxSteps = maxSteps;
+        this.commands = commands || [];
+    }
+
+    addCommand(command) {
+        this.commands.push(command);
+    }
+
+    getTape() {
+        return this.tape;
+    }
+
+    getName() {
+        return this.name;
+    }
+
+    getMaxSteps() {
+        return this.maxSteps;
+    }
+
+    getPosition() {
+        return this.initialPosition;
+    }
+
+    getCommands() {
+        return this.commands;
     }
 }
 
-function isSetCommand(line) {
-    if (line.charAt(0) === 's' &&
-        line.charAt(1) === 'e' &&
-        line.charAt(2) === 't' &&
-        line.charAt(3) === ' ') {
-        return true;
+class PostResult {
+    constructor(headPosition, steps, tape, history) {
+        this.headPosition = headPosition;
+        this.steps = steps;
+        this.tape = tape;
+        this.history = history;
     }
-    return false;
 }
 
-function isIfCommand(line) {
-    if (line.charAt(0) === 'i' &&
-        line.charAt(1) === 'f' &&
-        line.charAt(2) === ' ') {
-        return true;
-    }
-    return false;
-}
-
-function isMoveCommand(line) {
-    if (line.charAt(0) === 'm' &&
-        line.charAt(1) === 'o' &&
-        line.charAt(2) === 'v' &&
-        line.charAt(3) === 'e') {
-        return true;
-    }
-    return false;
-}
-
-function isStopCommand(line) {
-    if (line.charAt(0) === 's' &&
-        line.charAt(1) === 't' &&
-        line.charAt(2) === 'o' &&
-        line.charAt(3) === 'p') {
-        return true;
-    }
-    return false;
-}
-
-class TuringMachine {
+class PostMachine {
     constructor(program) {
-        this.transitionTable = new Map(program.transitionTable);
-        this.currentState = program.initialState;
-        this.tape = program.tape;
-        this.headPosition = 0;
-        this.emptySymbol = program.emptySymbol;
+        this.tape = program.getTape();
+        this.headPosition = program.getPosition();
+        this.commands = [...program.getCommands()];
+        this.currentCommandIndex = 0;
         this.history = [];
     }
 
-    moveCaret(type) {
-        switch (type) {
-            case MoveType.LEFT:
-                this.headPosition -= 1;
-                if (this.headPosition < 0) {
-                    this.tape = this.emptySymbol + this.tape; // Add symbol to the left
-                    this.headPosition = 0;
-                }
-                break;
-            case MoveType.RIGHT:
-                this.headPosition += 1;
-                if (this.headPosition >= this.tape.length) {
-                    this.tape += this.emptySymbol; // Add symbol to the right
-                }
-                break;
-            case MoveType.STAY:
-                // Do nothing
-                break;
-        }
-    }
-
-    commandExecute(command) {
-        this.history.push(`${this.currentState} | ${this.tape.charAt(this.headPosition)}`);
-        // Write the symbol
-        this.tape = this.tape.substring(0, this.headPosition) + command.symbolToWrite + this.tape.substring(this.headPosition + 1);
-        // Move the caret
-        this.moveCaret(command.move);
-        // Transition to the new state
-        this.currentState = command.nextState;
-    }
-
-    getCurrentCommand(currentSymbol) {
-        const commands = this.transitionTable.get(this.currentState) || new Map();
-        return commands.get(currentSymbol);
-    }
-
     run(maxSteps) {
+        let stepsTaken = 0;
+
         for (let step = 0; step < maxSteps; step++) {
-            if (!this.transitionTable.has(this.currentState)) {
+            this.history.push({
+                step: stepsTaken,
+                position: this.headPosition,
+                symbol: this.tape.charAt(this.headPosition),
+                command: this.commands[this.currentCommandIndex].getType()
+            });
+            if (!this.nextStep()) {
                 break;
             }
-            const currentSymbol = this.tape.charAt(this.headPosition);
-            const command = this.getCurrentCommand(currentSymbol);
-
-            if (command) {
-                this.commandExecute(command);
-            } else {
-                break; // No suitable command
-            }
+            stepsTaken++;
         }
-        return new ResultTuring(this.tape, this.history.length, this.headPosition, this.history);
+
+        return new PostResult(this.headPosition, stepsTaken, this.tape, this.history);
     }
 
-    step() {
-        if (!this.transitionTable.has(this.currentState)) {
-            return;
+    nextStep() {
+        if (this.currentCommandIndex >= this.commands.length) {
+            return false;
         }
-        const currentSymbol = this.tape.charAt(this.headPosition);
-        const command = this.getCurrentCommand(currentSymbol);
 
-        if (command) {
-            this.commandExecute(command);
+        const command = this.commands[this.currentCommandIndex];
+        switch (command.getType()) {
+            case Command.CommandType.SET_MARK:
+                this.setMark();
+                break;
+            case Command.CommandType.REMOVE_MARK:
+                this.removeMark();
+                break;
+            case Command.CommandType.MOVE_LEFT:
+                this.moveLeft();
+                break;
+            case Command.CommandType.MOVE_RIGHT:
+                this.moveRight();
+                break;
+            case Command.CommandType.CHECK_MARK:
+                this.checkMark();
+                break;
+            case Command.CommandType.STOP:
+                return false;
+            case Command.CommandType.NO_OP:
+                this.currentCommandIndex = command.getNextCommandIndex();
+                break;
+        }
+        return true;
+    }
+
+    setMark() {
+        if (this.tape.charAt(this.headPosition) === '1') {
+            throw new Error("Метка уже установлена.");
+        }
+        this.tape = this.tape.substring(0, this.headPosition) + '1' + this.tape.substring(this.headPosition + 1);
+        this.currentCommandIndex = this.commands[this.currentCommandIndex].getNextCommandIndex();
+    }
+
+    removeMark() {
+        if (this.tape.charAt(this.headPosition) === '0') {
+            throw new Error("Нет метки для удаления.");
+        }
+        this.tape = this.tape.substring(0, this.headPosition) + '0' + this.tape.substring(this.headPosition + 1);
+        this.currentCommandIndex = this.commands[this.currentCommandIndex].getNextCommandIndex();
+    }
+
+    moveLeft() {
+        this.headPosition--;
+        if (this.headPosition < 0) {
+            this.headPosition = 0;
+            this.tape = '0' + this.tape;
+        }
+        this.currentCommandIndex = this.commands[this.currentCommandIndex].getNextCommandIndex();
+    }
+
+    moveRight() {
+        this.headPosition++;
+        if (this.headPosition >= this.tape.length) {
+            this.tape += '0';
+        }
+        this.currentCommandIndex = this.commands[this.currentCommandIndex].getNextCommandIndex();
+    }
+
+    checkMark() {
+        if (this.tape.charAt(this.headPosition) === '0') {
+            this.currentCommandIndex = this.commands[this.currentCommandIndex].getNextCommandIndex();
+        } else {
+            this.currentCommandIndex = this.commands[this.currentCommandIndex].getAlternativeCommandIndex();
         }
     }
 }

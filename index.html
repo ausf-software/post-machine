@@ -14,13 +14,13 @@
 		<link rel="apple-touch-icon" href="https://ausf-software.github.io/images/favicons/apple.png">  <!-- 180×180 -->
 		<link rel="manifest" href="https://ausf-software.github.io/manifest.webmanifest">
 
-		<link rel="stylesheet" type="text/css" href="/css/standart-style.css">
+		<link rel="stylesheet" type="text/css" href="https://ausf-software.github.io/css/standart-style.css">
 		<link rel="stylesheet" type="text/css" href="css/post_calc.css">
 		
 		<meta name="viewport" content="width=device-width">
 		<meta name="description" content="Машина Поста — это модель вычислений, которая использует набор правил для обработки строк и манипуляции с символами на ленте. Она была предложена Эмилем Постом и служит для изучения вычислимости и алгоритмических процессов. Машина Поста позволяет формализовать понятия, связанные с вычислениями, и является важным инструментом в теории автоматов и формальных языков. | The Post machine is a computational model that uses a set of rules for string processing and manipulating symbols on a tape. It was proposed by Emil Post and serves to study computability and algorithmic processes. The Post machine allows for the formalization of concepts related to computation and is an important tool in automata theory and formal languages." />
 		<meta name="keywords" content="машина Поста, вычислимость, правила обработки, формальные языки, теория автоматов, алгоритмы | Post machine, computability, processing rules, formal languages, automata theory, algorithms" />
-		<script type="text/javascript" src="/js/standart-script.js"></script>
+		<script type="text/javascript" src="https://ausf-software.github.io/js/standart-script.js"></script>
 	</head>
 
 	<body>
@@ -46,6 +46,45 @@
 				<p>Algorithmic machine</p>
 				<h1 class="slogan">Post machine emulator</h1>
 			</section>
+			<section id="head" class="head content-container">
+				<div class="command-description">
+					<h2>Command Description</h2>
+					<p>This description presents the commands used to control the flow of program execution, as well as their functional purpose.</p>
+				
+					<h3>set mark jump 1</h3>
+					<h4>Alternative notation: V 1</h4>
+					<p><strong>Description</strong>: Sets a mark at the current position in the program and jumps to the line designated as <code>1</code>. This allows saving the current execution state and returning to it later.</p>
+				
+					<h3>set zero jump 1</h3>
+					<h4>Alternative notation: X 1</h4>
+					<p><strong>Description</strong>: Clears the mark if it exists and jumps to line <code>1</code>. This command is used to reset the state if the mark is no longer needed.</p>
+				
+					<h3>move right jump 1</h3>
+					<h4>Alternative notation: -> 1</h4>
+					<p><strong>Description</strong>: Moves the pointer to the right and jumps to line <code>1</code>. This allows navigating through the data structure or program, changing the current position.</p>
+				
+					<h3>move left jump 1</h3>
+					<h4>Alternative notation: <- 1</h4>
+					<p><strong>Description</strong>: Moves the pointer to the left and jumps to line <code>1</code>. This is similar to the previous command but in the opposite direction.</p>
+				
+					<h3>if mark ? jump 2 : jump 1</h3>
+					<h4>Alternative notation: ? 1 ; 2</h4>
+					<p><strong>Description</strong>: Checks for the presence of a mark. If the mark is absent, the program jumps to line <code>jump 1</code>; otherwise, it jumps to line <code>jump 2</code>. This command allows implementing conditional logic in the program.</p>
+				
+					<h3>if zero ? jump 2 : jump 1</h3>
+					<h4>Alternative notation: ? 2 ; 1</h4>
+					<p><strong>Description</strong>: Similar to the previous command, it checks for the presence of the "zero" mark. Depending on the result of the check, the program jumps to one of the two lines.</p>
+				
+					<h3>stop</h3>
+					<p><strong>Description</strong>: Ends the execution of the program. This command is used to stop all processes and exit the program.</p>
+				
+					<h2>General Description of Commands</h2>
+					<p>These commands allow controlling the flow of program execution, setting and clearing marks, as well as implementing conditional jumps. They are essential tools for creating logic in programming.</p>
+				
+					<h2>Additional Information</h2>
+					<p>Each empty line or comment is considered a blank command and has its number in the command sequence corresponding to the line on which it is located. This helps maintain order and structure in the program, even if there are inactive or explanatory elements.</p>
+				</div>
+			</section>
 		</header>
 
 		<main>
@@ -59,13 +98,23 @@
 			<section class="input-section center">
 				<div class="input-form">
 					<div class="space-div">
-						<label for="tape">Лента (символы):</label>
-						<input type="text" id="tape-input" name="tape" required>
+						<label for="name-string">Programm name:</label>
+						<input type="text" name="name-string" id="name-string" placeholder="Name" onkeydown="if(event.keyCode==13){return false;}">
 					</div>
 
 					<div class="space-div">
-						<label for="initialPositin">Начальное смещение каретки относительно нуля:</label>
-						<input type="number" id="initialPositin" name="initialPositin" required>
+						<label for="tape">Tape (symbols):</label>
+						<input type="text" id="tape-input" name="tape" required value="0">
+					</div>
+
+					<div class="space-div">
+						<label for="initialPositin">The initial offset of the caret relative to zero:</label>
+						<input type="number" id="initialPositin" name="initialPositin" required value="0">
+					</div>
+
+					<div class="space-div">
+						<label for="max-steps">Maximum number of steps:</label>
+						<input type="number" name="max-steps" id="max-steps" placeholder="1000" value="1000" onkeydown="if(event.keyCode==13){return false;}">
 					</div>
 					
 					<div class="space-div">
@@ -73,7 +122,13 @@
 					</div>
 
 					<div class="space-div">
-						<button type="submit" onclick="run()">Запустить программу</button>
+						<button type="submit" onclick="run()">Run programm</button>
+						<button id="add" onclick="addProgramm()">Add programm</button>
+						<button id="save_file" onclick="downloadProgramms()">Save file</button>
+						<label for="fileInput" class="styled-file-upload">
+							<input type="file" id="fileInput" accept=".post" />
+							Upload File
+						</label>
 					</div>
 				</div>
 				<div class="input-form answer-form">
@@ -82,9 +137,19 @@
 					<div class="line-table-container list-size" id="lineContainer"></div>
 				</div>
 			</section>
+			<section class="programm-section">
+				<div class="list-con content-container">
+					<div class="lab">
+						Programm list:
+					</div>
+					<div id="programms_div" class="programms-div">
+					</div>
+				</div>
+			</section>
 		</main>
 
 		<script type="text/javascript" src="js/post.js"></script>
+		<script type="text/javascript" src="js/parser.js"></script>
 		<script type="text/javascript" src="js/post_calc.js"></script>
 
 		<footer>

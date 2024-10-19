@@ -1,3 +1,33 @@
+function comandToString (rule){
+    var res = "";
+    switch (rule.type) {
+        case Command.CommandType.SET_MARK:
+            res += `set mark jump ${rule.nextCommandIndex}`;
+            break;
+        case Command.CommandType.REMOVE_MARK:
+            res += `set zero jump ${rule.nextCommandIndex}`;
+            break;
+        case Command.CommandType.MOVE_RIGHT:
+            res += `move right jump ${rule.nextCommandIndex}`;
+            break;
+        case Command.CommandType.MOVE_LEFT:
+            res += `move left jump ${rule.nextCommandIndex}`;
+            break;
+        case Command.CommandType.CHECK_MARK:
+            res += `if mark ? jump ${rule.alternativeCommandIndex} : jump ${rule.nextCommandIndex}`;
+            break;
+        case Command.CommandType.STOP:
+            res += `stop\n`;
+            break;
+        case Command.CommandType.NO_OP:
+            res += `${rule.alternativeCommandIndex}`;
+            break;
+        default:
+            res += `unknown command`;
+    }
+    return res;
+}
+
 class Command {
     static CommandType = {
         SET_MARK: 'SET_MARK',
@@ -84,12 +114,6 @@ class PostMachine {
         let stepsTaken = 0;
 
         for (let step = 0; step < maxSteps; step++) {
-            this.history.push({
-                step: stepsTaken,
-                position: this.headPosition,
-                symbol: this.tape.charAt(this.headPosition),
-                command: this.commands[this.currentCommandIndex].getType()
-            });
             if (!this.nextStep()) {
                 break;
             }
@@ -105,6 +129,7 @@ class PostMachine {
         }
 
         const command = this.commands[this.currentCommandIndex];
+        this.history.push(comandToString(command));
         switch (command.getType()) {
             case Command.CommandType.SET_MARK:
                 this.setMark();

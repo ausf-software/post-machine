@@ -1,15 +1,16 @@
 const tapeElement = document.getElementById('tape');
 const caretElement = document.getElementById('caret');
-var emptySymbol = '0'; // Символ пустоты
-var tape = '0'; // Пример содержимого ленты
-var headPosition = 0; // Начальная позиция каретки
+const tapeContainerElement = document.getElementById('tape-container');
+var emptySymbol = '0';
+var tape = '0';
+var headPosition = 0;
+var intervalId;
 
-const tapeWidth = 920;
+var tapeWidth = tapeContainerElement.offsetWidth - 2;
 const cellWidth = 40;
-const countCells = tapeWidth / cellWidth;
-const midCells = countCells / 2;
-console.log(midCells)
-
+var countCells = tapeWidth / cellWidth;
+var midCells = countCells / 2;
+// 360
 var isModificationAllowed = true;
 
 const inputTape = document.getElementById('tape-input');
@@ -65,6 +66,18 @@ function renderTape(emptySymbol, tape) {
     }
     updateCaretPosition();
 }
+
+const resizeObserver = new ResizeObserver(entries => {
+    for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        tapeWidth = width;
+        console.log("tape size:" + tapeWidth);
+        countCells = tapeWidth / cellWidth;
+        midCells = countCells / 2;
+        renderTape(emptySymbol, tape);
+    }
+});
+resizeObserver.observe(tapeContainerElement);
 
 function handleCellClick(index) {
     if (isModificationAllowed) {
@@ -134,34 +147,43 @@ function showErrorPopup(message) {
     popup.className = 'error-popup';
     popup.innerHTML = `
         <p>${message}</p>
-        <button class="close-btn">Закрыть</button>
+        <button class="close-btn">Close</button>
     `;
 
     popup.querySelector('.close-btn').onclick = function() {
         document.body.removeChild(popup);
     };
-    console.log(message);
     document.body.appendChild(popup);
 }
 
-try {
-    var cccc = convertStringToCommand(
-        `<-
-        ? 3 ; 4
-        V 4
-        <- 5
-        ? 6 ; 2
-        !`);
-        console.log(cccc);
-        var p = new PostMachineProgram(4, "10101");
-        for (var ppp of cccc) {
-            p.addCommand(ppp);
-        }
+function startExecution(program, maxSteps) {
+    const machine = new PostMachine(program);
+    let stepsTaken = 0;
 
-        var a = new PostMachine(p);
-        console.log(a.run(50));
-} catch (error) {
-    showErrorPopup(error.message);
+    intervalId = setInterval(() => {
+        if (stepsTaken < maxSteps) {
+            const result = machine.nextStep();
+            if (!result) {
+                clearInterval(intervalId);
+                isModificationAllowed = true;
+                setResultString(tape);
+                return;
+            }
+            stepsTaken++;
+            tape = machine.tape;
+            headPosition = machine.headPosition;
+            renderTape(emptySymbol, tape)
+            console.log(`Step: ${stepsTaken}, Tape: ${tape}, Head Position: ${headPosition}`);
+            clearAnswer();
+            setResultSteps(stepsTaken);
+            const lineContainer = document.getElementById('lineContainer');
+            addLinesToContainer(machine.history, lineContainer);
+        } else {
+            clearInterval(intervalId);
+            isModificationAllowed = true;
+            setResultString(tape);
+        }
+    }, 500);
 }
 
 function run() {
@@ -170,12 +192,17 @@ function run() {
     var hp = inputPostion.value;
     var textProgramm = inputProgramm.value;
     var n = inputName.value;
+    tape = t;
+    headPosition = hp;
     try {
         var commands = convertStringToCommand(textProgramm);
         var program = new PostMachineProgram(hp, t, n, ms);
         for (var c of commands) {
             program.addCommand(c);
         }
+        isModificationAllowed = false;
+        clearAnswer();
+        startExecution(program, ms);
     } catch (error) {
         showErrorPopup(error.message);
     }
@@ -254,31 +281,7 @@ function rulesToString(rules) {
             a = true;
             continue;
         }
-        switch (rule.type) {
-            case Command.CommandType.SET_MARK:
-                res += `set mark jump ${rule.nextCommandIndex}\n`;
-                break;
-            case Command.CommandType.REMOVE_MARK:
-                res += `set zero jump ${rule.nextCommandIndex}\n`;
-                break;
-            case Command.CommandType.MOVE_RIGHT:
-                res += `move right jump ${rule.nextCommandIndex}\n`;
-                break;
-            case Command.CommandType.MOVE_LEFT:
-                res += `move left jump ${rule.nextCommandIndex}\n`;
-                break;
-            case Command.CommandType.CHECK_MARK:
-                res += `if mark ? jump ${rule.alternativeCommandIndex} : jump ${rule.nextCommandIndex}\n`;
-                break;
-            case Command.CommandType.STOP:
-                res += `stop\n`;
-                break;
-            case Command.CommandType.NO_OP:
-                res += `${rule.alternativeCommandIndex}\n`;
-                break;
-            default:
-                res += `unknown command\n`;
-        }
+        res += comandToString(rule) + "\n";
     }
     return res.trim();
 }
@@ -290,6 +293,9 @@ function loadProgramm(n) {
 	inputMaxSteps.value = p.getMaxSteps();
 	inputProgramm.value = rulesToString(p.getCommands());
     inputPostion.value = p.getPosition();
+    tape = p.getTape();
+    headPosition = p.getPosition();
+    renderTape(emptySymbol, tape);
 }
 
 function removeProgramm(n) {

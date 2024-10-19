@@ -1,10 +1,17 @@
 .tape-container {
     position: relative;
     margin: 15px auto;
-    width: 922px;
+    width: 362px;
     height: 55px;
     overflow: hidden;
     border: 1px solid #000;
+}
+
+.command-description {
+    padding: 20px;
+    h4 {
+        margin-top: 10px;
+    }
 }
 
 .tape {
@@ -208,4 +215,7 @@
 	.input-section {
 		flex-direction: row;
 	}
+    .tape-container {
+        width: 922px;
+    }
 }

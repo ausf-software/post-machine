@@ -120,15 +120,27 @@ function updateCaretPosition() {
 function moveLeft() {
     if (headPosition > 0) {
         headPosition--;
-        renderTape(emptySymbol, tape);
+    } else {
+        tape = emptySymbol + tape;
+        headPosition = 0;
     }
+    
+    inputPostion.value = headPosition;
+    inputTape.value = tape;
+    renderTape(emptySymbol, tape);
 }
 
 function moveRight() {
-    if (headPosition < tape.length) {
+    if (headPosition < tape.length - 1) {
         headPosition++;
-        renderTape(emptySymbol, tape);
+    } else {
+        tape += emptySymbol;
+        headPosition++;
     }
+    
+    inputPostion.value = headPosition;
+    inputTape.value = tape;
+    renderTape(emptySymbol, tape);
 }
 inputTape.addEventListener('blur', function() {
     tape = inputTape.value;

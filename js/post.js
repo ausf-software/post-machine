@@ -2,22 +2,22 @@ function comandToString (rule){
     var res = "";
     switch (rule.type) {
         case Command.CommandType.SET_MARK:
-            res += `set mark jump ${rule.nextCommandIndex}`;
+            res += `V ${rule.nextCommandIndex}`;
             break;
         case Command.CommandType.REMOVE_MARK:
-            res += `set zero jump ${rule.nextCommandIndex}`;
+            res += `X ${rule.nextCommandIndex}`;
             break;
         case Command.CommandType.MOVE_RIGHT:
-            res += `move right jump ${rule.nextCommandIndex}`;
+            res += `-> ${rule.nextCommandIndex}`;
             break;
         case Command.CommandType.MOVE_LEFT:
-            res += `move left jump ${rule.nextCommandIndex}`;
+            res += `<- ${rule.nextCommandIndex}`;
             break;
         case Command.CommandType.CHECK_MARK:
-            res += `if mark ? jump ${rule.alternativeCommandIndex} : jump ${rule.nextCommandIndex}`;
+            res += `?  ${rule.nextCommandIndex} ; ${rule.alternativeCommandIndex}`;
             break;
         case Command.CommandType.STOP:
-            res += `stop\n`;
+            res += `!`;
             break;
         case Command.CommandType.NO_OP:
             res += `${rule.alternativeCommandIndex}`;

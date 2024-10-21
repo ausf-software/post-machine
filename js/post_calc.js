@@ -294,7 +294,11 @@ function rulesToString(rules) {
             a = true;
             continue;
         }
-        res += comandToString(rule) + "\n";
+        res += comandToString(rule);
+        if (rule.type !== Command.CommandType.NO_OP)
+            res += "\n";
+        else if (rule.type === Command.CommandType.NO_OP && rule.alternativeCommandIndex.length > 1)
+            res += "\n";
     }
     return res.trim();
 }
@@ -345,7 +349,7 @@ function proggramDivUpdate() {
 		res += "<div class='program'>";
 		res += `<span class="program-name">${programs[i].getName()}</span>`;
 		res += '<div class="programm-buttons">';
-		res += `<button onclick='loadProgramm(${i})' class="btn download">Upload</button>`;
+		res += `<button onclick='loadProgramm(${i})' class="btn download">Load</button>`;
 		res += `<button onclick='removeProgramm(${i})' class="btn delete">Remove</button>`;
 		//res += `<button onclick='updateProgramm(${i})' class="btn save">Update</button>`;
 		res += '</div>';

@@ -199,6 +199,7 @@ function startExecution(program, maxSteps) {
 }
 
 function run() {
+    clearInterval(intervalId);
     var ms = inputMaxSteps.value;
     var t = inputTape.value;
     var hp = inputPostion.value;

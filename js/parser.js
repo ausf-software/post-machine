@@ -143,7 +143,7 @@ function convertPostCommandsToCommands(postCommands) {
 
         switch (postCommand.name) {
             case CommandName.set:
-                commandType = Command.CommandType.SET_MARK;
+                commandType = postCommand.firstValue === MarkType.zero ? Command.CommandType.REMOVE_MARK : Command.CommandType.SET_MARK;
                 nextCommandIndex = postCommand.secondValue;
                 alternativeCommandIndex = 0;
                 break;

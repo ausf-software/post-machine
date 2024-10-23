@@ -1,7 +1,8 @@
 const tapeElement = document.getElementById('tape');
 const caretElement = document.getElementById('caret');
 const tapeContainerElement = document.getElementById('tape-container');
-var emptySymbol = ' ';
+const tapeNumbersElement = document.getElementById("tape-numbers");
+var emptySymbol = '0';
 var tape = '0';
 var headPosition = 0;
 var intervalId;
@@ -13,6 +14,7 @@ var countCells = tapeWidth / cellWidth;
 var midCells = countCells / 2;
 // 360
 var isModificationAllowed = true;
+var caretPosDelta = 0;
 
 const inputTape = document.getElementById('tape-input');
 const inputPostion = document.getElementById('initialPositin');
@@ -48,19 +50,29 @@ function setPositionToInputField(str) {
 
 function renderTape(emptySymbol, tape) {
     tapeElement.innerHTML = '';
+    tapeNumbersElement.innerHTML = '';
     for (let i = 0; i < midCells - 1; i++) {
         const cell = document.createElement('div');
+        const num = document.createElement('div');
         cell.className = 'cell';
-        cell.textContent = emptySymbol;
+        cell.textContent = marked == '*' ? ' ' : emptySymbol;
+        num.className = 'cell-num';
+        num.textContent = -Math.floor(midCells) + i - caretPosDelta;
         cell.onclick = () => handleCellClick(-Math.floor(midCells) + i);
         tapeElement.appendChild(cell);
+        tapeNumbersElement.appendChild(num);
     }
     for (let i = 0; i < tape.length; i++) {
         const cell = document.createElement('div');
+        const num = document.createElement('div');
         cell.className = 'cell';
         cell.textContent = tape[i] || emptySymbol;
         if (cell.textContent == '0') {
-            cell.textContent = emptySymbol;
+            if (marked == '*') {
+                cell.textContent = ' ';
+            } else {
+                cell.textContent = emptySymbol;
+            }
         }
         if (cell.textContent == '1') {
             cell.textContent = marked;
@@ -72,18 +84,27 @@ function renderTape(emptySymbol, tape) {
                 cell.appendChild(circle);
             }
         }
-        cell.onclick = () => handleCellClick(i); // Добавляем обработчик клика
+        num.className = 'cell-num';
+        num.textContent = i - caretPosDelta;
+        cell.onclick = () => handleCellClick(i);
         tapeElement.appendChild(cell);
+        tapeNumbersElement.appendChild(num);
     }
     for (let i = 0; i < midCells - 1; i++) {
         const cell = document.createElement('div');
+        const num = document.createElement('div');
         cell.className = 'cell';
-        cell.textContent = emptySymbol;
+        cell.textContent = marked == '*' ? ' ' : emptySymbol;
+        num.className = 'cell-num';
+        num.textContent = tape.length + i - caretPosDelta;
         cell.onclick = () => handleCellClick(tape.length + i);
         tapeElement.appendChild(cell);
+        tapeNumbersElement.appendChild(num);
     }
     updateCaretPosition();
 }
+
+caretElement.onclick = () => handleCellClick(headPosition);
 
 const resizeObserver = new ResizeObserver(entries => {
     for (let entry of entries) {
@@ -102,7 +123,6 @@ inputTapeSkin.addEventListener('change', function() {
         emptySymbol = '0';
         marked = '1';
     } else {
-        emptySymbol = ' ';
         marked = '*';
     }
     renderTape(emptySymbol, tape);
@@ -112,12 +132,14 @@ function handleCellClick(index) {
     if (isModificationAllowed) {
         if (index < 0) {
             var temp = "1";
+            var j = index;
             index += 1;
             for (; index != 0; index++, headPosition++) {
                 temp += "0";
             }
             headPosition++;
             tape = temp + tape;
+            caretPosDelta -= j;
         } else {
             if (index >= tape.length) {
                 var temp = "1";
@@ -144,6 +166,7 @@ function handleCellClick(index) {
 function updateCaretPosition() {
     const offset = headPosition * cellWidth;
     tapeElement.style.transform = `translateX(-${offset}px)`;
+    tapeNumbersElement.style.transform = `translateX(-${offset}px)`;
 }
 
 function moveLeft() {
@@ -152,6 +175,7 @@ function moveLeft() {
     } else {
         tape = emptySymbol + tape;
         headPosition = 0;
+        caretPosDelta++;
     }
     
     inputPostion.value = headPosition;
@@ -229,6 +253,7 @@ function startExecution(program, maxSteps) {
 
 function run() {
     clearInterval(intervalId);
+    caretPosDelta = 0;
     var ms = inputMaxSteps.value;
     var t = inputTape.value;
     var hp = inputPostion.value;

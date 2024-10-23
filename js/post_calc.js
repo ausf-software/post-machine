@@ -25,6 +25,20 @@ const divProgramm = document.getElementById("programms_div");
 const inputSpeed = document.getElementById("steps-interval");
 const inputTapeSkin = document.getElementById("tape-skin");
 
+var editor = CodeMirror.fromTextArea(inputProgramm, {
+    lineNumbers: true,
+    mode: 'text/x-perl',
+    theme: 'abbott',
+});
+
+function getProgramText() {
+    return editor.doc.getValue();
+}
+
+function setProgramText(str) {
+    return editor.doc.setValue(str);
+}
+
 var speed = 500;
 
 function clearAnswer() {
@@ -257,7 +271,7 @@ function run() {
     var ms = inputMaxSteps.value;
     var t = inputTape.value;
     var hp = inputPostion.value;
-    var textProgramm = inputProgramm.value;
+    var textProgramm = getProgramText();
     var n = inputName.value;
     speed = Number(inputSpeed.value);
     tape = t;
@@ -325,7 +339,7 @@ function addProgramm () {
 	var ms = inputMaxSteps.value;
     var t = inputTape.value;
     var hp = inputPostion.value;
-    var textProgramm = inputProgramm.value;
+    var textProgramm = getProgramText();
     var n = inputName.value;
     try {
         var commands = convertStringToCommand(textProgramm);
@@ -363,7 +377,7 @@ function loadProgramm(n) {
 	inputName.value = p.getName();
 	inputTape.value = p.getTape();
 	inputMaxSteps.value = p.getMaxSteps();
-	inputProgramm.value = rulesToString(p.getCommands());
+	setProgramText(rulesToString(p.getCommands()));
     inputPostion.value = p.getPosition();
     tape = p.getTape();
     headPosition = p.getPosition();
@@ -379,7 +393,7 @@ function updateProgramm(n) {
 	var ms = inputMaxSteps.value;
     var t = inputTape.value;
     var hp = inputPostion.value;
-    var textProgramm = inputProgramm.value;
+    var textProgramm = getProgramText();
     var n = inputName.value;
     try {
         var commands = convertStringToCommand(textProgramm);

@@ -1,10 +1,11 @@
 const tapeElement = document.getElementById('tape');
 const caretElement = document.getElementById('caret');
 const tapeContainerElement = document.getElementById('tape-container');
-var emptySymbol = '0';
+var emptySymbol = ' ';
 var tape = '0';
 var headPosition = 0;
 var intervalId;
+var marked = '*';
 
 var tapeWidth = tapeContainerElement.offsetWidth - 2;
 const cellWidth = 40;
@@ -20,6 +21,7 @@ const inputProgramm = document.getElementById('rules-string');
 const inputName = document.getElementById('name-string');
 const divProgramm = document.getElementById("programms_div");
 const inputSpeed = document.getElementById("steps-interval");
+const inputTapeSkin = document.getElementById("tape-skin");
 
 var speed = 500;
 
@@ -57,6 +59,19 @@ function renderTape(emptySymbol, tape) {
         const cell = document.createElement('div');
         cell.className = 'cell';
         cell.textContent = tape[i] || emptySymbol;
+        if (cell.textContent == '0') {
+            cell.textContent = emptySymbol;
+        }
+        if (cell.textContent == '1') {
+            cell.textContent = marked;
+            if (marked == '*') {
+                cell.classList.add('marked-cell');
+                cell.textContent = ' ';
+                const circle = document.createElement('div');
+                circle.classList.add('circle');
+                cell.appendChild(circle);
+            }
+        }
         cell.onclick = () => handleCellClick(i); // Добавляем обработчик клика
         tapeElement.appendChild(cell);
     }
@@ -81,6 +96,17 @@ const resizeObserver = new ResizeObserver(entries => {
     }
 });
 resizeObserver.observe(tapeContainerElement);
+
+inputTapeSkin.addEventListener('change', function() {
+    if (inputTapeSkin.value == "binary") {
+        emptySymbol = '0';
+        marked = '1';
+    } else {
+        emptySymbol = ' ';
+        marked = '*';
+    }
+    renderTape(emptySymbol, tape);
+});
 
 function handleCellClick(index) {
     if (isModificationAllowed) {

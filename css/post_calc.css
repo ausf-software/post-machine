@@ -7,6 +7,15 @@
     border: 1px solid #000;
 }
 
+.marked-cell{}
+
+.circle {
+    width: 25px;
+    height: 25px;
+    background-color: green;
+    border-radius: 50%;
+}
+
 .command-description {
     padding: 20px;
     h4 {

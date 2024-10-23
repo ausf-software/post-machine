@@ -19,6 +19,9 @@ const inputMaxSteps = document.getElementById('max-steps');
 const inputProgramm = document.getElementById('rules-string');
 const inputName = document.getElementById('name-string');
 const divProgramm = document.getElementById("programms_div");
+const inputSpeed = document.getElementById("steps-interval");
+
+var speed = 500;
 
 function clearAnswer() {
     const lineContainer = document.getElementById('lineContainer');
@@ -195,7 +198,7 @@ function startExecution(program, maxSteps) {
             isModificationAllowed = true;
             setResultString(tape);
         }
-    }, 500);
+    }, speed);
 }
 
 function run() {
@@ -205,6 +208,7 @@ function run() {
     var hp = inputPostion.value;
     var textProgramm = inputProgramm.value;
     var n = inputName.value;
+    speed = Number(inputSpeed.value);
     tape = t;
     headPosition = hp;
     try {

@@ -372,6 +372,46 @@ function rulesToString(rules) {
     return res.trim();
 }
 
+function insert() {
+    let firstNumber = prompt("Enter start command index:");
+
+    let secondNumber = prompt("Enter count:");
+
+    try {
+        firstNumber = Number(firstNumber);
+        secondNumber = Number(secondNumber);
+        if (firstNumber < 0 || secondNumber < 0) {
+            showErrorPopup("Number < 0 :\\");
+            return;
+        }
+        insertEmptyCommand(firstNumber, secondNumber);
+    } catch (error) {
+        showErrorPopup("It is not number :\\");
+    }
+}
+
+function insertEmptyCommand(index, n) {
+	var textProgramm = getProgramText();
+    var commands = convertStringToCommand(textProgramm);
+    var i;
+    for (i = index; i < index + n; i++) {
+        commands.splice(i + 1, 0, new Command(Command.CommandType.NO_OP, i + 2, '\n'));
+    }
+    console.log(commands);
+    for (i += 1; i < commands.length; i++) {
+        if (isStringConvertibleToNumber(commands[i].alternativeCommandIndex) && !isString(commands[i].alternativeCommandIndex)) {
+            commands[i].alternativeCommandIndex += n;
+        }
+        if (isStringConvertibleToNumber(commands[i].nextCommandIndex)) {
+            commands[i].nextCommandIndex += n;
+        }
+    }
+    
+    console.log(commands);
+
+    setProgramText(rulesToString(commands));
+}
+
 function loadProgramm(n) {
 	var p = programs[n];
 	inputName.value = p.getName();

@@ -2,6 +2,10 @@ function isStringConvertibleToNumber(str) {
     return !isNaN(Number(str));
 }
 
+function isString(value) {
+    return typeof value === 'string';
+}
+
 const CommandName = {
     set: 'set',
     if: 'if',

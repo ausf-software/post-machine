@@ -93,9 +93,19 @@ function renderTape(emptySymbol, tape) {
             if (marked == '*') {
                 cell.classList.add('marked-cell');
                 cell.textContent = ' ';
-                const circle = document.createElement('div');
-                circle.classList.add('circle');
-                cell.appendChild(circle);
+                console.log("skin:" + inputTapeSkin.value)
+                if (inputTapeSkin.value == "point") {
+                    const circle = document.createElement('div');
+                    circle.classList.add('circle');
+                    cell.appendChild(circle);
+                } else {
+                    var im = document.createElement('img');
+                    im.src = "./troll.png";
+                    im.style.width = "30px";
+                    im.style.height = "30px";
+                    cell.appendChild(im);
+                }
+                
             }
         }
         num.className = 'cell-num';

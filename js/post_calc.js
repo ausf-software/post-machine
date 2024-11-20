@@ -105,7 +105,7 @@ function renderTape(emptySymbol, tape) {
                     im.style.height = "30px";
                     cell.appendChild(im);
                 }
-                
+
             }
         }
         num.className = 'cell-num';
@@ -344,6 +344,11 @@ document.getElementById('fileInput').addEventListener('change', (event) => {
 		alert('Пожалуйста, выберите файл для загрузки.');
 	}
 });
+
+function stop() {
+    clearInterval(intervalId);
+    isModificationAllowed=true;
+}
 
 function addProgramm () {
 	var ms = inputMaxSteps.value;
